@@ -31,8 +31,7 @@ your cloud accounts are registered.
 
 export FALCON_CLIENT_ID="your_client_id_here"
 export FALCON_CLIENT_SECRET="your_client_secret_here"
-export FALCON_API_URL="
-api.crowdstrike.com
+export FALCON_API_URL="api.crowdstrike.com
 "
 
 
