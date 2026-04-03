@@ -1,0 +1,48 @@
+# ============================================================
+# CrowdStrike Falcon Cloud Security Tools - .gitignore
+# ============================================================
+
+# Credentials - NEVER commit
+.env
+.env.*
+*.env
+
+# Script output files
+ioms_*.json
+ioms_*.csv
+assets_*.json
+assets_*.csv
+ioms_by_rule_*.json
+ioms_by_rule_*.csv
+fcs_output_*.json
+scope_results.txt
+endpoint_results.txt
+iom_raw_results.txt
+diagnostic*.txt
+*_output.txt
+test_*.py
+
+# Python
+venv/
+.venv/
+env/
+falcon-venv/
+falcon-iom-env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
