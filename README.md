@@ -30,11 +30,8 @@ your cloud accounts are registered.
 ## 3. Set Environment Variables
 
 export FALCON_CLIENT_ID="your_client_id_here"
-
 export FALCON_CLIENT_SECRET="your_client_secret_here"
-
-export FALCON_API_URL="api.crowdstrike.com
-"
+export FALCON_API_URL="api.crowdstrike.com"
 
 
 ## 4. Verify Access
@@ -65,23 +62,18 @@ python asset_retrieval.py --output console --limit 10
 ## Common Filters
 
 GCP critical and high only
-
 python iom_retrieval.py --platform gcp --severity critical,high --output csv
 
 AWS all findings
-
 python iom_retrieval.py --platform aws --output json
 
 Specific account
-
 python iom_retrieval.py --account-id projects/1065216519849
 
 NIST framework
-
 python iom_retrieval.py --framework NIST --output csv
 
 Raw FQL filter
-
 python iom_retrieval.py --fql "severity:'high'+cloud_provider:'gcp'"
 
 
