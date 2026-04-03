@@ -3,8 +3,7 @@
 ## 1. Install
 
 ```
-git clone 
-github.com
+git clone https://github.com/gslabaugh/falcon-cloud-security-tools.git
 ```
 
 ```
