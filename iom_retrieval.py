@@ -660,11 +660,45 @@ def flatten_finding_for_csv(finding):
 
 
 def flatten_rule_for_csv(rule):
-    rule_obj      = rule.get("rule", {}) or {}
+    rule_obj = rule.get("rule", {}) or {}
+
+    # Handle rule being a non-dict
+    if not isinstance(rule_obj, dict):
+        rule_obj = {}
+
     compliance    = rule.get("compliance", []) or []
-    frameworks    = " | ".join(c.get("framework", "") for c in compliance)
-    requirements  = " | ".join(c.get("requirement", "") for c in compliance)
-    tags          = rule.get("tags", []) or []
+    frameworks    = " | ".join(
+        c.get("framework", "") for c in compliance
+        if isinstance(c, dict)
+    )
+    requirements  = " | ".join(
+        c.get("requirement", c.get("name", "")) for c in compliance
+        if isinstance(c, dict)
+    )
+
+    # Handle tags as dict or list
+    tags     = rule.get("tags") or []
+    if isinstance(tags, dict):
+        tags_str = " | ".join(f"{k}={v}" for k, v in tags.items())
+    elif isinstance(tags, list):
+        tags_str = " | ".join(str(t) for t in tags)
+    else:
+        tags_str = str(tags) if tags else ""
+
+    # Rule name/id may be at top level or nested in rule dict
+    rule_name = (
+        rule_obj.get("name") or
+        rule_obj.get("rule_name") or
+        rule.get("rule_name") or
+        ""
+    )
+    rule_id = (
+        rule_obj.get("id") or
+        rule_obj.get("rule_id") or
+        rule.get("rule_id") or
+        ""
+    )
+
     return {
         "cid"                    : rule.get("cid", ""),
         "cloud_provider"         : rule.get("cloud_provider", ""),
@@ -672,15 +706,16 @@ def flatten_rule_for_csv(rule):
         "region"                 : rule.get("region", ""),
         "misconfigurations"      : rule.get("misconfigurations", 0),
         "assessed_assets"        : rule.get("assessed_assets", 0),
-        "severity"               : rule_obj.get("severity", rule.get("severity", "")),
-        "rule_id"                : rule_obj.get("id", rule.get("rule_id", "")),
-        "rule_name"              : rule_obj.get("name", rule.get("rule_name", "")),
+        "severity"               : rule.get("severity", rule_obj.get("severity", "")),
+        "rule_id"                : rule_id,
+        "rule_name"              : rule_name,
         "rule_service"           : rule_obj.get("service", ""),
         "rule_description"       : rule_obj.get("description", ""),
         "compliance_frameworks"  : frameworks,
         "compliance_requirements": requirements,
-        "tags"                   : " | ".join(str(t) for t in tags),
+        "tags"                   : tags_str,
     }
+
 
 
 def write_csv(rows, fieldnames, filename):
@@ -926,15 +961,44 @@ def output_rules_console(rules, summary):
     print(f"{'─'*70}")
 
     for i, r in enumerate(rules, 1):
-        rule   = r.get("rule", {}) or {}
-        sev    = str(rule.get("severity", r.get("severity", "unknown"))).lower()
+        # ── Handle different possible rule field structures ──────
+        # The combined endpoint may return rule as a dict, string, or None
+        rule_raw = r.get("rule") or {}
+
+        if isinstance(rule_raw, dict):
+            rule_name = (
+                rule_raw.get("name") or
+                rule_raw.get("rule_name") or
+                rule_raw.get("title") or
+                r.get("rule_name") or
+                r.get("policy_name") or
+                "N/A"
+            )
+            rule_id = (
+                rule_raw.get("id") or
+                rule_raw.get("rule_id") or
+                rule_raw.get("uuid") or
+                r.get("rule_id") or
+                "N/A"
+            )
+        else:
+            rule_name = str(rule_raw) if rule_raw else r.get("rule_name", "N/A")
+            rule_id   = r.get("rule_id", "N/A")
+
+        # Severity - may be at top level or inside rule
+        sev = (
+            r.get("severity") or
+            (rule_raw.get("severity") if isinstance(rule_raw, dict) else None) or
+            "unknown"
+        ).lower()
+
         color  = SEVERITY_COLORS.get(sev, "")
         miscs  = r.get("misconfigurations", 0)
         assets = r.get("assessed_assets", 0)
 
         print(f"\n[{i:04d}] {'─'*54}")
-        print(f"  Rule Name        : {rule.get('name', 'N/A')}")
-        print(f"  Rule ID          : {rule.get('id', 'N/A')}")
+        print(f"  Rule Name        : {rule_name}")
+        print(f"  Rule ID          : {rule_id}")
         print(f"  Severity         : {color}{sev.upper()}{RESET}")
         print(f"  Misconfigurations: {miscs}")
         print(f"  Assessed Assets  : {assets}")
@@ -942,18 +1006,30 @@ def output_rules_console(rules, summary):
         print(f"  Account ID       : {r.get('account_id', 'N/A')}")
         print(f"  Region           : {r.get('region', 'N/A')}")
 
-        compliance = r.get("compliance", [])
-        if compliance:
+        # ── Compliance - handle list of dicts ────────────────────
+        compliance = r.get("compliance") or []
+        if isinstance(compliance, list):
             for c in compliance[:3]:
-                print(f"  Compliance       : {c.get('framework','N/A')} - {c.get('requirement','N/A')}")
+                if isinstance(c, dict):
+                    fw  = c.get("framework", "N/A")
+                    req = c.get("requirement", c.get("name", "N/A"))
+                    print(f"  Compliance       : {fw} - {req}")
 
-        tags = r.get("tags", [])
+        # ── Tags - handle dict OR list ───────────────────────────
+        tags = r.get("tags")
         if tags:
-            print(f"  Tags             : {', '.join(str(t) for t in tags[:5])}")
+            if isinstance(tags, dict):
+                # Tags as dict: {key: value, ...}
+                tag_items = [f"{k}={v}" for k, v in list(tags.items())[:5]]
+                print(f"  Tags             : {', '.join(tag_items)}")
+            elif isinstance(tags, list):
+                tag_items = [str(t) for t in tags[:5]]
+                print(f"  Tags             : {', '.join(tag_items)}")
 
     print(f"\n{'='*70}")
     print(f"  END OF REPORT - {len(rules)} rules")
     print(f"{'='*70}\n")
+
 
 
 # ============================================================
