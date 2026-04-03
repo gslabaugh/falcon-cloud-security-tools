@@ -2,13 +2,17 @@
 
 ## 1. Install
 
+```
 git clone 
 github.com
+```
 
+```
 cd falcon-cloud-security-tools
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+```
 
 
 ## 2. Configure API Client
@@ -29,50 +33,73 @@ your cloud accounts are registered.
 
 ## 3. Set Environment Variables
 
-export FALCON_CLIENT_ID="your_client_id_here"
-export FALCON_CLIENT_SECRET="your_client_secret_here"
-export FALCON_API_URL="api.crowdstrike.com"
+```
+export FALCON_CLIENT_ID="your_client_id_here"  
+export FALCON_CLIENT_SECRET="your_client_secret_here"  
+export FALCON_API_URL="api.crowdstrike.com"  
+```
 
 ## 4. Verify Access
 
+```
 python scope_test.py
+```
 
 All required endpoints should show ACCESS OK.
 
 ## 5. Run IOM Retrieval
 
-All IOMs to JSON (default)
+All IOMs to JSON (default)  
+```
 python iom_retrieval.py
+```
 
-All IOMs to CSV
+All IOMs to CSV  
+```
 python iom_retrieval.py --output csv
+```
 
-Quick console test - 10 results
+Quick console test - 10 results  
+```
 python iom_retrieval.py --output console --limit 10
+```
 
-IOMs grouped by rule
+IOMs grouped by rule  
+```
 python iom_retrieval.py --grouped-by-rule --output console
+```
 
-Cloud assets
+Cloud assets  
+```
 python asset_retrieval.py --output console --limit 10
+```
 
 ## Common Filters
 
-GCP critical and high only
+GCP critical and high only  
+```
 python iom_retrieval.py --platform gcp --severity critical,high --output csv
+```
 
-AWS all findings
+AWS all findings  
+```
 python iom_retrieval.py --platform aws --output json
+```
 
-Specific account
+Specific account  
+```
 python iom_retrieval.py --account-id projects/1065216519849
+```
 
-NIST framework
+NIST framework  
+```
 python iom_retrieval.py --framework NIST --output csv
+```
 
-Raw FQL filter
+Raw FQL filter  
+```
 python iom_retrieval.py --fql "severity:'high'+cloud_provider:'gcp'"
-
+```
 
 ## Notes
 
