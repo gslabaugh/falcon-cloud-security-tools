@@ -33,11 +33,9 @@ export FALCON_CLIENT_ID="your_client_id_here"
 export FALCON_CLIENT_SECRET="your_client_secret_here"
 export FALCON_API_URL="api.crowdstrike.com"
 
-
 ## 4. Verify Access
 
 python scope_test.py
-
 
 All required endpoints should show ACCESS OK.
 
@@ -57,7 +55,6 @@ python iom_retrieval.py --grouped-by-rule --output console
 
 Cloud assets
 python asset_retrieval.py --output console --limit 10
-
 
 ## Common Filters
 
